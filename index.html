@@ -1,0 +1,1297 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>المديرية العامة للشؤون البحرية - لوحة المؤشرات</title>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Cairo) -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --bg-primary: #0a1118;
+            --bg-secondary: #121e2b;
+            --bg-card: rgba(22, 36, 52, 0.7);
+            --accent-blue: #00d2ff;
+            --accent-cyan: #00e5ff;
+            --accent-gold: #ffb703;
+            --accent-green: #00f5d4;
+            --accent-red: #ff4d6d;
+            --text-main: #f0f4f8;
+            --text-muted: #94a3b8;
+            --border-glow: rgba(0, 210, 255, 0.25);
+            --modal-bg: rgba(10, 17, 24, 0.85);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 210, 255, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(0, 229, 255, 0.05) 0%, transparent 40%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Header Styling */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glow);
+            padding: 20px 30px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            font-size: 2.2rem;
+            color: var(--accent-blue);
+            text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+        }
+
+        .logo-text h1 {
+            font-size: 1.5rem;
+            font-weight: 800;
+            background: linear-gradient(45deg, #ffffff, var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-text p {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        /* Action Buttons */
+        .actions-group {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-add {
+            background: linear-gradient(135deg, #00b4db, #0083b0);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(0, 180, 219, 0.3);
+        }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 180, 219, 0.5);
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, #f7971e, #ffd200);
+            color: #111;
+            box-shadow: 0 4px 15px rgba(247, 151, 30, 0.3);
+        }
+
+        .btn-edit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(247, 151, 30, 0.5);
+        }
+
+        /* Search Bar Section */
+        .search-container {
+            background: var(--bg-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-glow);
+            padding: 15px 25px;
+            border-radius: 16px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .search-box {
+            position: relative;
+            flex-grow: 1;
+        }
+
+        .search-box i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 45px 12px 15px;
+            background: rgba(18, 30, 43, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 10px rgba(0, 210, 255, 0.3);
+        }
+
+        /* Department Filter Box (New) */
+        .dept-filter-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(18, 30, 43, 0.8);
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-width: 220px;
+        }
+
+        .dept-filter-box select {
+            background: transparent;
+            border: none;
+            color: var(--accent-cyan);
+            font-weight: 700;
+            font-size: 0.95rem;
+            outline: none;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .dept-filter-box select option {
+            background: var(--bg-secondary);
+            color: var(--text-main);
+        }
+
+        /* KPI Cards */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .kpi-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: transform 0.3s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .kpi-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: rgba(0, 210, 255, 0.1);
+            color: var(--accent-blue);
+        }
+
+        .kpi-info h3 {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 5px;
+        }
+
+        .kpi-info p {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text-main);
+        }
+
+        /* Charts Grid */
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 992px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .chart-card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Table Section */
+        .table-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: 16px;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .year-filter-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(18, 30, 43, 0.8);
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .year-filter-box select {
+            background: transparent;
+            border: none;
+            color: var(--accent-cyan);
+            font-weight: 700;
+            font-size: 0.9rem;
+            outline: none;
+            cursor: pointer;
+        }
+        
+        .year-filter-box select option {
+            background: var(--bg-secondary);
+            color: var(--text-main);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: right;
+        }
+
+        th, td {
+            padding: 14px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: rgba(0, 0, 0, 0.3);
+            color: var(--accent-blue);
+            font-weight: 700;
+        }
+
+        tbody tr {
+            transition: background 0.2s;
+        }
+
+        tbody tr:hover {
+            background: rgba(0, 210, 255, 0.05);
+        }
+
+        .section-clickable {
+            color: var(--accent-cyan);
+            cursor: pointer;
+            text-decoration: underline;
+            font-weight: 600;
+        }
+
+        .action-cell {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .action-icon {
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: transform 0.2s, color 0.2s;
+        }
+
+        .action-icon.edit {
+            color: var(--accent-gold);
+        }
+
+        .action-icon.edit:hover {
+            color: #fff;
+            transform: scale(1.2);
+        }
+
+        .action-icon.delete {
+            color: var(--accent-red);
+        }
+
+        .action-icon.delete:hover {
+            color: #ff1a40;
+            transform: scale(1.2);
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--modal-bg);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-glow);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 650px;
+            padding: 30px;
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 10px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.3rem;
+            color: var(--accent-blue);
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .close-modal:hover {
+            color: var(--accent-red);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group.full-width {
+            grid-column: span 2;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            padding: 10px 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-main);
+            outline: none;
+        }
+
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            border-color: var(--accent-blue);
+        }
+
+        .submit-btn {
+            margin-top: 20px;
+            width: 100%;
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, var(--accent-blue), #0083b0);
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        /* Toast Notifications */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: var(--bg-card);
+            border: 1px solid var(--accent-green);
+            color: #fff;
+            padding: 12px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 2000;
+        }
+
+        /* ---------------- Chatbot Styles ---------------- */
+        .chatbot-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 65px;
+            height: 65px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-blue), #0083b0);
+            color: #fff;
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(0, 210, 255, 0.4);
+            border: none;
+            z-index: 1500;
+            transition: transform 0.3s ease;
+        }
+        
+        .chatbot-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .chatbot-window {
+            position: fixed;
+            bottom: 110px;
+            right: 30px;
+            width: 350px;
+            height: 500px;
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-glow);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 1500;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform-origin: bottom right;
+        }
+
+        .chatbot-window.active {
+            opacity: 1;
+            pointer-events: all;
+            transform: translateY(0) scale(1);
+        }
+
+        .chat-header {
+            background: rgba(18, 30, 43, 0.9);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .chat-header h3 {
+            font-size: 1.1rem;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .chat-msg {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 15px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            word-wrap: break-word;
+        }
+
+        .msg-bot {
+            background: rgba(0, 210, 255, 0.1);
+            color: var(--text-main);
+            align-self: flex-start;
+            border-bottom-right-radius: 4px;
+            border: 1px solid rgba(0, 210, 255, 0.2);
+        }
+
+        .msg-user {
+            background: var(--accent-blue);
+            color: #000;
+            font-weight: 600;
+            align-self: flex-end;
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-input-area {
+            padding: 15px;
+            background: rgba(0,0,0,0.4);
+            display: flex;
+            gap: 10px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .chat-input-area input {
+            flex: 1;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 12px 15px;
+            border-radius: 20px;
+            color: white;
+            outline: none;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .chat-input-area input:focus {
+            border-color: var(--accent-cyan);
+        }
+
+        .chat-input-area button {
+            background: var(--accent-blue);
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: #000;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+        }
+
+        .chat-input-area button:hover {
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="logo-area">
+                <i class="fa-solid fa-ship logo-icon"></i>
+                <div class="logo-text">
+                    <h1>المديرية العامة للشؤون البحرية</h1>
+                    <p>نظام إحصائيات ومؤشرات الأداء التفاعلي</p>
+                </div>
+            </div>
+            <div class="actions-group">
+                <button class="btn btn-add" onclick="openModal('addModal')">
+                    <i class="fa-solid fa-plus"></i> إضافة قسم جديد
+                </button>
+                <button class="btn btn-edit" onclick="openModal('editModal')">
+                    <i class="fa-solid fa-pen-to-square"></i> تعديل البيانات
+                </button>
+            </div>
+        </header>
+
+        <!-- Live Search Bar & Department Filter -->
+        <div class="search-container">
+            <div class="search-box">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" id="liveSearchInput" placeholder="بحث مباشر في الصفحة (الدائرة، القسم، نوع الشهادة، العام...)" onkeyup="filterTable()">
+            </div>
+            <div class="dept-filter-box">
+                <i class="fa-solid fa-building-columns" style="color: var(--accent-blue);"></i>
+                <select id="tableDeptFilter" onchange="filterTable()">
+                    <option value="ALL">كل الدوائر</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- KPI Cards Grid -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-icon"><i class="fa-solid fa-building-columns"></i></div>
+                <div class="kpi-info">
+                    <h3>إجمالي الدوائر</h3>
+                    <p id="kpiDeptCount">0</p>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon"><i class="fa-solid fa-layer-group"></i></div>
+                <div class="kpi-info">
+                    <h3>إجمالي الأقسام</h3>
+                    <p id="kpiSectionCount">0</p>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon"><i class="fa-solid fa-file-contract"></i></div>
+                <div class="kpi-info">
+                    <h3>إجمالي المعاملات/الشهادات</h3>
+                    <p id="kpiTotalCount">0</p>
+                </div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+                <div class="kpi-info">
+                    <h3>إجمالي الإيرادات (ر.ع)</h3>
+                    <p id="kpiTotalRevenue">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3><i class="fa-solid fa-chart-column"></i> الإيرادات حسب العام والدوائر</h3>
+                <canvas id="revenueBarChart" height="130"></canvas>
+            </div>
+            <div class="chart-card">
+                <h3><i class="fa-solid fa-chart-pie"></i> توزيع المعاملات حسب الأقسام</h3>
+                <canvas id="sectionDoughnutChart" height="200"></canvas>
+            </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="table-card">
+            <div class="table-header">
+                <h3><i class="fa-solid fa-table-list"></i> سجل البيانات التفصيلي</h3>
+                <div class="year-filter-box">
+                    <i class="fa-solid fa-filter" style="color: var(--accent-blue);"></i>
+                    <label for="tableYearFilter" style="font-size:0.85rem; color:var(--text-muted);">تصفية حسب السنة:</label>
+                    <select id="tableYearFilter" onchange="filterTable()">
+                        <option value="ALL">جميع السنوات</option>
+                    </select>
+                </div>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>اسم الدائرة</th>
+                            <th>اسم القسم (انقر للتفاصيل)</th>
+                            <th>نوع الشهادة / السفينة</th>
+                            <th>العدد</th>
+                            <th>الإيرادات (ر.ع)</th>
+                            <th>العام</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                        <!-- Data inserted dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ---------------- Chatbot UI ---------------- -->
+    <button class="chatbot-btn" onclick="toggleChatbot()" title="تحدث مع المساعد الذكي">
+        <i class="fa-solid fa-robot"></i>
+    </button>
+
+    <div class="chatbot-window" id="chatbotWindow">
+        <div class="chat-header">
+            <h3><i class="fa-solid fa-robot"></i> مساعد الإحصائيات</h3>
+            <button class="close-modal" onclick="toggleChatbot()">&times;</button>
+        </div>
+        <div class="chat-messages" id="chatMessages">
+            <div class="chat-msg msg-bot">أهلاً بك! أنا المساعد الذكي الخاص بلوحة المؤشرات. يمكنك سؤالي عن إجمالي الإيرادات، عدد الدوائر، الأقسام، أو المعاملات. 🚢</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chatInput" placeholder="اكتب سؤالك هنا..." onkeypress="handleChatKeyPress(event)">
+            <button onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <!-- Modal: Add New Section / Data -->
+    <div class="modal-overlay" id="addModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-folder-plus"></i> إضافة قسم / سجل جديد</h2>
+                <button class="close-modal" onclick="closeModal('addModal')">&times;</button>
+            </div>
+            <form id="addForm" onsubmit="handleAddData(event)">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>اسم الدائرة</label>
+                        <input type="text" id="addDept" required placeholder="مثال: دائرة الملاحة البحرية">
+                    </div>
+                    <div class="form-group">
+                        <label>اسم القسم</label>
+                        <input type="text" id="addSection" required placeholder="مثال: قسم التصاريح">
+                    </div>
+                    <div class="form-group">
+                        <label>نوع الشهادة أو السفينة</label>
+                        <input type="text" id="addCertType" required placeholder="مثال: تصريح ملاحي">
+                    </div>
+                    <div class="form-group">
+                        <label>العدد</label>
+                        <input type="number" id="addCount" min="0" required placeholder="0">
+                    </div>
+                    <div class="form-group">
+                        <label>الإيرادات (ر.ع)</label>
+                        <input type="number" id="addRevenue" min="0" step="0.01" required placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label>العام</label>
+                        <select id="addYear" required></select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>معلومات وتوصيف القسم</label>
+                        <textarea id="addInfo" rows="3" placeholder="اكتب نبذة أو وصفاً مختصراً عن مهام هذا القسم..."></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn"><i class="fa-solid fa-floppy-disk"></i> حفظ البيانات</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Edit Data -->
+    <div class="modal-overlay" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-pen-to-square"></i> تعديل البيانات والتحديث</h2>
+                <button class="close-modal" onclick="closeModal('editModal')">&times;</button>
+            </div>
+            <form id="editForm" onsubmit="handleEditData(event)">
+                <div class="form-group full-width" style="margin-bottom: 15px;">
+                    <label>اختر السجل المراد تعديله</label>
+                    <select id="editSelectIndex" onchange="populateEditFields()" required></select>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>اسم الدائرة</label>
+                        <input type="text" id="editDept" required>
+                    </div>
+                    <div class="form-group">
+                        <label>اسم القسم</label>
+                        <input type="text" id="editSection" required>
+                    </div>
+                    <div class="form-group">
+                        <label>نوع الشهادة أو السفينة</label>
+                        <input type="text" id="editCertType" required>
+                    </div>
+                    <div class="form-group">
+                        <label>العدد</label>
+                        <input type="number" id="editCount" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>الإيرادات (ر.ع)</label>
+                        <input type="number" id="editRevenue" min="0" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>العام</label>
+                        <select id="editYear" required></select>
+                    </div>
+                    <div class="form-group full-width">
+                        <label>معلومات القسم</label>
+                        <textarea id="editInfo" rows="3"></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="submit-btn"><i class="fa-solid fa-rotate"></i> تحديث واستبدال البيانات</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Section Info Pop-up -->
+    <div class="modal-overlay" id="infoModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-circle-info"></i> معلومات وتفاصيل القسم</h2>
+                <button class="close-modal" onclick="closeModal('infoModal')">&times;</button>
+            </div>
+            <div style="line-height: 1.8;">
+                <h3 id="infoSectionTitle" style="color: var(--accent-cyan); margin-bottom: 10px;"></h3>
+                <p id="infoSectionText" style="color: var(--text-main); margin-bottom: 15px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px;"></p>
+                <div style="border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 10px;">
+                    <p style="font-size: 0.9rem; color: var(--text-muted);">إجمالي المعاملات التراكمية للقسم: <strong id="infoSectionCount" style="color: #fff;"></strong></p>
+                    <p style="font-size: 0.9rem; color: var(--text-muted);">إجمالي الإيرادات التراكمية: <strong id="infoSectionRev" style="color: var(--accent-green);"></strong> ر.ع</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast">
+        <i class="fa-solid fa-circle-check" style="color: var(--accent-green);" id="toastIcon"></i>
+        <span id="toastMsg">تمت العملية بنجاح!</span>
+    </div>
+
+    <script>
+        // Initial Default Data
+        const initialData = [
+            { dept: "دائرة الملاحة والسلامة البحرية", section: "قسم التصاريح الملاحية", type: "تصريح ملاحي لليخوت", count: 80, revenue: 12000, year: "2026", info: "مسؤول عن إصدار التصاريح الملاحية للليخوت والسفن الأجنبية والمحليّة." },
+            { dept: "دائرة الملاحة والسلامة البحرية", section: "قسم التصاريح الملاحية", type: "تصريح ملاحي تجاري", count: 40, revenue: 8000, year: "2025", info: "مسؤول عن إصدار التصاريح الملاحية للليخوت والسفن الأجنبية والمحليّة." },
+            { dept: "دائرة التسجيل والسفن", section: "قسم تسجيل السفن", type: "شهادة تسجيل سفينة", count: 120, revenue: 24000, year: "2026", info: "معني بإجراءات تسجيل وتجديد ملكيات السفن والقوارب البحرية." },
+            { dept: "دائرة السلامة والبيئة البحرية", section: "قسم التفتيش والرقابة", type: "شهادة سلامة ملاحية", count: 65, revenue: 9750, year: "2026", info: "يقوم بالتفتيش الدوري على معايير الأمان للقطع البحرية." }
+        ];
+
+        let maritimeData = [];
+        let barChartInstance = null;
+        let pieChartInstance = null;
+
+        // Initialize App
+        window.onload = function() {
+            populateYearDropdowns();
+            loadStorageData();
+            renderDashboard();
+        };
+
+        function populateYearDropdowns() {
+            const addYear = document.getElementById('addYear');
+            const editYear = document.getElementById('editYear');
+            const filterYear = document.getElementById('tableYearFilter');
+
+            addYear.innerHTML = '';
+            editYear.innerHTML = '';
+            filterYear.innerHTML = '<option value="ALL">جميع السنوات</option>';
+
+            for (let y = 2020; y <= 2030; y++) {
+                addYear.innerHTML += `<option value="${y}">${y}</option>`;
+                editYear.innerHTML += `<option value="${y}">${y}</option>`;
+                filterYear.innerHTML += `<option value="${y}">${y}</option>`;
+            }
+            addYear.value = "2026";
+        }
+        
+        // Populate Departments Dropdown
+        function populateDeptDropdown() {
+            const deptFilter = document.getElementById('tableDeptFilter');
+            const currentSelection = deptFilter.value;
+            
+            const uniqueDepts = [...new Set(maritimeData.map(item => item.dept))].sort();
+            
+            deptFilter.innerHTML = '<option value="ALL">كل الدوائر</option>';
+            uniqueDepts.forEach(dept => {
+                deptFilter.innerHTML += `<option value="${dept}">${dept}</option>`;
+            });
+            
+            if (uniqueDepts.includes(currentSelection)) {
+                deptFilter.value = currentSelection;
+            }
+        }
+
+        function loadStorageData() {
+            const stored = localStorage.getItem('maritime_db_data');
+            if (stored) {
+                try {
+                    maritimeData = JSON.parse(stored);
+                } catch(e) {
+                    maritimeData = [...initialData];
+                }
+            } else {
+                maritimeData = [...initialData];
+                saveToStorage();
+            }
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('maritime_db_data', JSON.stringify(maritimeData));
+        }
+
+        function renderDashboard() {
+            populateDeptDropdown();
+            filterTable();
+            populateEditSelect();
+        }
+
+        function renderTable(data) {
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = '';
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: var(--text-muted);">لا توجد بيانات مطابقة للبحث</td></tr>`;
+                return;
+            }
+
+            data.forEach((item) => {
+                const realIndex = maritimeData.indexOf(item);
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.dept}</td>
+                        <td><span class="section-clickable" onclick="showSectionInfo('${item.section}')">${item.section}</span></td>
+                        <td>${item.type}</td>
+                        <td><strong>${item.count}</strong></td>
+                        <td style="color: var(--accent-green); font-weight:700;">${Number(item.revenue).toLocaleString('en-US')} OMR</td>
+                        <td><span style="background: rgba(0,210,255,0.1); padding: 4px 8px; border-radius: 6px;">${item.year}</span></td>
+                        <td>
+                            <div class="action-cell">
+                                <i class="fa-solid fa-pen-to-square action-icon edit" title="تعديل السجل" onclick="openEditForIndex(${realIndex})"></i>
+                                <i class="fa-solid fa-trash action-icon delete" title="حذف السجل" onclick="deleteRecord(${realIndex})"></i>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function updateKPIs(data) {
+            const depts = new Set(data.map(d => d.dept));
+            const sections = new Set(data.map(d => d.section));
+            const totalCount = data.reduce((acc, curr) => acc + Number(curr.count || 0), 0);
+            const totalRev = data.reduce((acc, curr) => acc + Number(curr.revenue || 0), 0);
+
+            document.getElementById('kpiDeptCount').innerText = depts.size;
+            document.getElementById('kpiSectionCount').innerText = sections.size;
+            document.getElementById('kpiTotalCount').innerText = totalCount.toLocaleString('en-US');
+            document.getElementById('kpiTotalRevenue').innerText = totalRev.toLocaleString('en-US') + " ر.ع";
+        }
+
+        function renderCharts(data) {
+            const years = [...new Set(data.map(d => d.year))].sort();
+            const revPerYear = years.map(y => {
+                return data.filter(d => d.year === y).reduce((sum, item) => sum + Number(item.revenue || 0), 0);
+            });
+
+            const sections = [...new Set(data.map(d => d.section))];
+            const countsPerSection = sections.map(s => {
+                return data.filter(d => d.section === s).reduce((sum, item) => sum + Number(item.count || 0), 0);
+            });
+
+            if (barChartInstance) barChartInstance.destroy();
+            if (pieChartInstance) pieChartInstance.destroy();
+
+            const ctxBar = document.getElementById('revenueBarChart').getContext('2d');
+            barChartInstance = new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: years.length ? years : ['لا توجد بيانات'],
+                    datasets: [{
+                        label: 'الإيرادات (ر.ع)',
+                        data: revPerYear.length ? revPerYear : [0],
+                        backgroundColor: 'rgba(0, 210, 255, 0.6)',
+                        borderColor: '#00d2ff',
+                        borderWidth: 1,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { labels: { color: '#f0f4f8' } } },
+                    scales: {
+                        x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+                        y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                    }
+                }
+            });
+
+            const ctxPie = document.getElementById('sectionDoughnutChart').getContext('2d');
+            pieChartInstance = new Chart(ctxPie, {
+                type: 'doughnut',
+                data: {
+                    labels: sections.length ? sections : ['لا توجد بيانات'],
+                    datasets: [{
+                        data: countsPerSection.length ? countsPerSection : [1],
+                        backgroundColor: ['#00d2ff', '#00f5d4', '#ffb703', '#ff4d6d', '#9b5de5']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { position: 'bottom', labels: { color: '#f0f4f8' } } }
+                }
+            });
+        }
+
+        function filterTable() {
+            const query = document.getElementById('liveSearchInput').value.toLowerCase().trim();
+            const selectedYear = document.getElementById('tableYearFilter').value;
+            const selectedDept = document.getElementById('tableDeptFilter').value;
+
+            const filtered = maritimeData.filter(item => {
+                const matchesSearch = item.dept.toLowerCase().includes(query) ||
+                                      item.section.toLowerCase().includes(query) ||
+                                      item.type.toLowerCase().includes(query) ||
+                                      item.year.toString().includes(query);
+                const matchesYear = (selectedYear === "ALL" || item.year.toString() === selectedYear);
+                const matchesDept = (selectedDept === "ALL" || item.dept === selectedDept);
+
+                return matchesSearch && matchesYear && matchesDept;
+            });
+
+            renderTable(filtered);
+            updateKPIs(filtered);
+            renderCharts(filtered);
+        }
+
+        // Add Data Handler
+        function handleAddData(e) {
+            e.preventDefault();
+            const newItem = {
+                dept: document.getElementById('addDept').value.trim(),
+                section: document.getElementById('addSection').value.trim(),
+                type: document.getElementById('addCertType').value.trim(),
+                count: parseInt(document.getElementById('addCount').value) || 0,
+                revenue: parseFloat(document.getElementById('addRevenue').value) || 0,
+                year: document.getElementById('addYear').value,
+                info: document.getElementById('addInfo').value.trim() || "لا توجد تفاصيل إضافية."
+            };
+
+            maritimeData.push(newItem);
+            saveToStorage();
+            renderDashboard();
+            closeModal('addModal');
+            document.getElementById('addForm').reset();
+            showToast("تمت إضافة القسم/السجل بنجاح وحفظ البيانات!");
+        }
+
+        function populateEditSelect() {
+            const select = document.getElementById('editSelectIndex');
+            select.innerHTML = '';
+            maritimeData.forEach((item, index) => {
+                select.innerHTML += `<option value="${index}">${item.dept} - ${item.section} (${item.type} ${item.year})</option>`;
+            });
+            if (maritimeData.length > 0) populateEditFields();
+        }
+
+        function populateEditFields() {
+            const idx = document.getElementById('editSelectIndex').value;
+            if (idx === "" || !maritimeData[idx]) return;
+            const item = maritimeData[idx];
+
+            document.getElementById('editDept').value = item.dept;
+            document.getElementById('editSection').value = item.section;
+            document.getElementById('editCertType').value = item.type;
+            document.getElementById('editCount').value = item.count;
+            document.getElementById('editRevenue').value = item.revenue;
+            document.getElementById('editYear').value = item.year;
+            document.getElementById('editInfo').value = item.info || "";
+        }
+
+        function openEditForIndex(index) {
+            openModal('editModal');
+            document.getElementById('editSelectIndex').value = index;
+            populateEditFields();
+        }
+
+        function handleEditData(e) {
+            e.preventDefault();
+            const idx = document.getElementById('editSelectIndex').value;
+            if (idx === "" || !maritimeData[idx]) return;
+
+            maritimeData[idx] = {
+                dept: document.getElementById('editDept').value.trim(),
+                section: document.getElementById('editSection').value.trim(),
+                type: document.getElementById('editCertType').value.trim(),
+                count: parseInt(document.getElementById('editCount').value) || 0,
+                revenue: parseFloat(document.getElementById('editRevenue').value) || 0,
+                year: document.getElementById('editYear').value,
+                info: document.getElementById('editInfo').value.trim() || "لا توجد تفاصيل إضافية."
+            };
+
+            saveToStorage();
+            renderDashboard();
+            closeModal('editModal');
+            showToast("تم تحديث واستبدال البيانات بنجاح!");
+        }
+
+        function deleteRecord(index) {
+            const item = maritimeData[index];
+            if (!item) return;
+
+            if (confirm(`هل أنت تأكد من حذف سجل "${item.section} - ${item.type}"؟`)) {
+                maritimeData.splice(index, 1);
+                saveToStorage();
+                renderDashboard();
+                showToast("تم حذف السجل بنجاح!", "delete");
+            }
+        }
+
+        function showSectionInfo(sectionName) {
+            const sectionItems = maritimeData.filter(d => d.section === sectionName);
+            const totalCount = sectionItems.reduce((acc, curr) => acc + Number(curr.count || 0), 0);
+            const totalRev = sectionItems.reduce((acc, curr) => acc + Number(curr.revenue || 0), 0);
+            const infoText = sectionItems[0]?.info || "لا يوجد توصيف متاح لهذا القسم حالياً.";
+
+            document.getElementById('infoSectionTitle').innerText = sectionName;
+            document.getElementById('infoSectionText').innerText = infoText;
+            document.getElementById('infoSectionCount').innerText = totalCount.toLocaleString('en-US');
+            document.getElementById('infoSectionRev').innerText = totalRev.toLocaleString('en-US');
+
+            openModal('infoModal');
+        }
+
+        function openModal(id) { document.getElementById(id).classList.add('active'); }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        function showToast(msg, type = "success") {
+            const toast = document.getElementById('toast');
+            const icon = document.getElementById('toastIcon');
+            document.getElementById('toastMsg').innerText = msg;
+
+            if (type === "delete") {
+                icon.className = "fa-solid fa-trash-can";
+                icon.style.color = "var(--accent-red)";
+                toast.style.borderColor = "var(--accent-red)";
+            } else {
+                icon.className = "fa-solid fa-circle-check";
+                icon.style.color = "var(--accent-green)";
+                toast.style.borderColor = "var(--accent-green)";
+            }
+
+            toast.style.display = 'flex';
+            setTimeout(() => { toast.style.display = 'none'; }, 3500);
+        }
+
+        // ---------------- Chatbot Logic ----------------
+        function toggleChatbot() {
+            const chatWindow = document.getElementById('chatbotWindow');
+            chatWindow.classList.toggle('active');
+        }
+
+        function handleChatKeyPress(event) {
+            if (event.key === 'Enter') sendChatMessage();
+        }
+
+        function sendChatMessage() {
+            const inputField = document.getElementById('chatInput');
+            const userText = inputField.value.trim();
+            if (!userText) return;
+
+            addChatMessage(userText, 'msg-user');
+            inputField.value = '';
+
+            // Simulate slight thinking delay
+            setTimeout(() => {
+                const botResponse = generateBotResponse(userText);
+                addChatMessage(botResponse, 'msg-bot');
+            }, 600);
+        }
+
+        function addChatMessage(text, className) {
+            const chatMessages = document.getElementById('chatMessages');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `chat-msg ${className}`;
+            msgDiv.innerText = text;
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight; // Auto-scroll to bottom
+        }
+
+        function generateBotResponse(text) {
+            const query = text.toLowerCase();
+
+            // Calculate current totals from maritimeData
+            const totalRevenue = maritimeData.reduce((acc, curr) => acc + Number(curr.revenue), 0);
+            const totalCount = maritimeData.reduce((acc, curr) => acc + Number(curr.count), 0);
+            const uniqueDepts = new Set(maritimeData.map(d => d.dept));
+            const uniqueSections = new Set(maritimeData.map(d => d.section));
+
+            // Check if specific department is mentioned
+            for (let dept of uniqueDepts) {
+                if (query.includes(dept.toLowerCase())) {
+                    const deptData = maritimeData.filter(d => d.dept === dept);
+                    const dRev = deptData.reduce((a, c) => a + Number(c.revenue), 0);
+                    const dCount = deptData.reduce((a, c) => a + Number(c.count), 0);
+                    return `إحصائيات "${dept}" تشير إلى أن الإيرادات تبلغ ${dRev.toLocaleString('en-US')} ر.ع، بإجمالي ${dCount} معاملة.`;
+                }
+            }
+
+            // Keyword matching logic
+            if (query.includes('ايرادات') || query.includes('فلوس') || query.includes('دخل') || query.includes('مبالغ') || query.includes('ريال')) {
+                return `يبلغ إجمالي الإيرادات المسجلة حالياً في النظام ${totalRevenue.toLocaleString('en-US')} ريال عماني.`;
+            } 
+            else if (query.includes('معاملات') || query.includes('شهادات') || query.includes('تصاريح') || query.includes('عدد')) {
+                return `تم تسجيل إجمالي ${totalCount.toLocaleString('en-US')} معاملة وشهادة في النظام.`;
+            } 
+            else if (query.includes('دوائر') || query.includes('دائرة')) {
+                return `يوجد حالياً ${uniqueDepts.size} دوائر مسجلة في لوحة المؤشرات.`;
+            } 
+            else if (query.includes('اقسام') || query.includes('أقسام') || query.includes('قسم')) {
+                return `تحتوي الدوائر على إجمالي ${uniqueSections.size} أقسام رئيسية.`;
+            } 
+            else if (query.includes('مرحبا') || query.includes('هلا') || query.includes('السلام')) {
+                return `أهلاً بك! كيف يمكنني مساعدتك في استخراج البيانات من لوحة المؤشرات اليوم؟`;
+            } 
+            else {
+                return `عذراً، لم أفهم سؤالك بدقة. يمكنك سؤالي عن: إجمالي الإيرادات، عدد الدوائر، عدد المعاملات، أو إحصائيات دائرة معينة.`;
+            }
+        }
+    </script>
+</body>
+</html>
